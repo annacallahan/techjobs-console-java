@@ -10,6 +10,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 
 /**
  * Created by LaunchCode
@@ -20,6 +22,7 @@ public class JobData {
     private static Boolean isDataLoaded = false;
 
     private static ArrayList<HashMap<String, String>> allJobs;
+    private static ArrayList<HashMap<String, String>> copyAllJobs = new ArrayList<>();
 
     /**
      * Fetch list of all values from loaded data,
@@ -36,13 +39,14 @@ public class JobData {
         ArrayList<String> values = new ArrayList<>();
 
         for (HashMap<String, String> row : allJobs) {
-            String aValue = row.get(field);
+            String aValue = row.get(field); // loops through each job posting in allJobs, aValue = value that pairs with the key
 
-            if (!values.contains(aValue)) {
+            if (!values.contains(aValue)) { // we need to move entries from allJobs to the value arrayList
                 values.add(aValue);
             }
         }
 
+        Collections.sort(values);
         return values;
     }
 
@@ -51,7 +55,12 @@ public class JobData {
         // load data, if not already loaded
         loadData();
 
-        return allJobs;
+        for (HashMap<String, String> job : allJobs){
+
+            copyAllJobs.add(job);
+
+        }
+        return copyAllJobs;
     }
 
     /**
@@ -74,7 +83,7 @@ public class JobData {
 
         for (HashMap<String, String> row : allJobs) {
 
-            String aValue = row.get(column);
+            String aValue = row.get(column).toLowerCase();
 
             if (aValue.contains(value)) {
                 jobs.add(row);
@@ -82,6 +91,24 @@ public class JobData {
         }
 
         return jobs;
+    }
+
+    public static ArrayList<HashMap<String, String>> findByValue(String value){
+
+        loadData();
+
+        ArrayList<HashMap<String, String>> jobs = new ArrayList<>();
+
+        for (HashMap<String, String> row : allJobs) {
+
+            for (Map.Entry<String, String> jobItem : row.entrySet()) {
+                if (jobItem.getValue().toLowerCase().contains(value) && !jobs.contains(row)){
+                    jobs.add(row);
+                } //System.out.println(jobs);
+            }
+        }
+        return jobs;
+
     }
 
     /**
@@ -113,7 +140,7 @@ public class JobData {
                     newJob.put(headerLabel, record.get(headerLabel));
                 }
 
-                allJobs.add(newJob);
+                allJobs.add(newJob); // looping through each row in the csv and adding each entry to allJobs
             }
 
             // flag the data as loaded, so we don't do it twice
